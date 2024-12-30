@@ -47,13 +47,13 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    protected override void OnEnable()
+    public override void OnEnable()
     {
         base.OnEnable();
         playerControls.Enable();
     }
 
-    protected override void OnDisable()
+    public override void OnDisable()
     {
         base.OnDisable();
         playerControls.Disable();

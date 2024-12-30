@@ -174,6 +174,7 @@ public class WJPlayerControls : IInputActionCollection2, IDisposable
     public interface IPlayerActions
     {
         void OnMove(InputAction.CallbackContext context);
+        InputAction Move { get; }
     }
 
     private class PlayerActions : IPlayerActions
