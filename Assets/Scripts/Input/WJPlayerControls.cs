@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
@@ -158,17 +160,35 @@ public class WJPlayerControls : IInputActionCollection2, IDisposable
         set => asset.devices = value;
     }
 
+    public ReadOnlyArray<InputBinding> bindings => asset.bindings;
+
     public ReadOnlyArray<InputControlScheme> controlSchemes => asset.controlSchemes;
 
     public bool Contains(InputAction action) => asset.Contains(action);
 
-    public IEnumerator<InputAction> GetEnumerator() => asset.GetEnumerator();
+    public IEnumerator<InputAction> GetEnumerator()
+    {
+        return asset.GetEnumerator();
+    }
 
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
     public void Enable() => asset.Enable();
 
     public void Disable() => asset.Disable();
+
+    public InputAction FindAction(string actionNameOrId, bool throwIfNotFound = false)
+    {
+        return asset.FindAction(actionNameOrId, throwIfNotFound);
+    }
+
+    public int FindBinding(InputBinding bindingMask, out InputAction action)
+    {
+        return asset.FindBinding(bindingMask, out action);
+    }
 
     public IPlayerActions Player => m_PlayerActionsCallbackInterface ?? (m_PlayerActionsCallbackInterface = new PlayerActions(this));
 
