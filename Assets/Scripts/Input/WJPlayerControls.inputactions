@@ -1,5 +1,6 @@
 {
     "name": "PlayerControls",
+    "generateWrapper": true,
     "maps": [
         {
             "name": "Player",

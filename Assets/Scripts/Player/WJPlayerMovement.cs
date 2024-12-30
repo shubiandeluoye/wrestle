@@ -31,7 +31,7 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         playerControls.Player.Move.canceled += OnMove;
 
         // Find MapManager in scene
-        mapManager = FindObjectOfType<MapManager>();
+        mapManager = FindObjectOfType<WJMapManager>();
         if (mapManager == null)
         {
             Debug.LogWarning("MapManager not found in scene!");
@@ -47,13 +47,15 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
+        base.OnEnable();
         playerControls.Enable();
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
         playerControls.Disable();
     }
 
