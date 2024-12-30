@@ -162,6 +162,18 @@ public class WJPlayerControls : IInputActionCollection2, IDisposable
 
     public bool Contains(InputAction action) => asset.Contains(action);
 
+    public InputAction FindAction(string actionNameOrId, bool throwIfNotFound = false)
+    {
+        return asset.FindAction(actionNameOrId, throwIfNotFound);
+    }
+
+    public bool FindBinding(InputBinding bindingMask, out InputAction action)
+    {
+        return asset.FindBinding(bindingMask, out action);
+    }
+
+    public ReadOnlyArray<InputBinding> bindings => asset.bindings;
+
     public IEnumerator<InputAction> GetEnumerator() => asset.GetEnumerator();
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
