@@ -4,7 +4,7 @@ using Photon.Pun;
 using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
+public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 {
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
@@ -12,19 +12,19 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     public float dropHeight = 5f;
     public float dropDuration = 2f;
     
-    private PlayerControls playerControls;
+    private WJPlayerControls playerControls;
     private Rigidbody rb;
     private Vector2 moveInput;
     private Vector3 networkPosition;
     private Quaternion networkRotation;
     private float networkLag;
-    private MapManager mapManager;
+    private WJMapManager mapManager;
     private bool isDropping = false;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        playerControls = new PlayerControls();
+        playerControls = new WJPlayerControls();
         
         // Subscribe to the Move action
         playerControls.Player.Move.performed += OnMove;
