@@ -6,11 +6,13 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 {
+    // Constants for drop animation
+    private const float DROP_HEIGHT = 5f;
+    private const float DROP_DURATION = 2f;
+
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float bounceForce = 10f;
-    public float dropHeight = 5f;
-    public float dropDuration = 2f;
     
     private WJPlayerControls playerControls;
     private Rigidbody rb;
