@@ -6,12 +6,12 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody))]
 public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 {
-    // Constants for drop animation
+    // Constants for drop animation and movement
     private const float DROP_HEIGHT = 5f;
     private const float DROP_DURATION = 2f;
+    private const float MOVE_SPEED = 5f;
 
     [Header("Movement Settings")]
-    public float moveSpeed = 5f;
     public float bounceForce = 10f;
     
     private WJPlayerControls playerControls;
@@ -22,6 +22,18 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     private float networkLag;
     private WJMapManager mapManager;
     private bool isDropping = false;
+    private bool isGrounded = false;
+
+    private bool IsGrounded()
+    {
+        // Raycast down slightly from player's position
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.1f))
+        {
+            return hit.collider.CompareTag("Floor");
+        }
+        return false;
+    }
 
     private void Awake()
     {
@@ -40,11 +52,14 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
+    private bool hasStartedGame = false;
+    
     private void Start()
     {
-        if (photonView.IsMine)
+        if (photonView.IsMine && !hasStartedGame)
         {
-            // Start drop sequence
+            hasStartedGame = true;
+            // Start drop sequence only once at game start
             StartCoroutine(StartDropSequence());
         }
     }
@@ -106,12 +121,37 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         isDropping = false;
     }
 
+    private Vector3 CalculateMovement(Vector2 input)
+    {
+        // Convert input to 3D movement vector
+        return new Vector3(input.x, 0f, input.y);
+    }
+
+    private void ApplyMovement(Vector3 movement)
+    {
+        if (isGrounded)
+        {
+            // Use MovePosition for precise ground movement
+            rb.MovePosition(rb.position + movement * (MOVE_SPEED * Time.fixedDeltaTime));
+        }
+        else
+        {
+            // In air, maintain vertical velocity but apply horizontal movement
+            Vector3 horizontalVelocity = new Vector3(movement.x * MOVE_SPEED, rb.velocity.y, movement.z * MOVE_SPEED);
+            rb.velocity = horizontalVelocity;
+        }
+    }
+
     private void FixedUpdate()
     {
         if (!photonView.IsMine || isDropping) return;
 
-        Vector3 movement = new Vector3(moveInput.x, 0f, moveInput.y);
-        rb.MovePosition(rb.position + movement * (moveSpeed * Time.fixedDeltaTime));
+        // Update grounded state
+        isGrounded = IsGrounded();
+
+        // Calculate and apply movement
+        Vector3 movement = CalculateMovement(moveInput);
+        ApplyMovement(movement);
 
         // Rotate to face movement direction
         if (movement != Vector3.zero)
