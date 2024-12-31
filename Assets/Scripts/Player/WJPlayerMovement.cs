@@ -28,9 +28,21 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     {
         // Raycast down slightly from player's position
         RaycastHit hit;
+        bool wasGrounded = isGrounded;
         if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.1f))
         {
-            return hit.collider.CompareTag("Floor");
+            bool newGrounded = hit.collider.CompareTag("Floor");
+            // Log state transitions for debugging
+            if (wasGrounded != newGrounded)
+            {
+                Debug.Log($"Ground state changed: {(newGrounded ? "Landed" : "Left ground")} at position {transform.position}");
+            }
+            return newGrounded;
+        }
+        // Log when leaving ground without floor below
+        if (wasGrounded)
+        {
+            Debug.Log($"Left ground (no floor detected) at position {transform.position}");
         }
         return false;
     }
@@ -38,6 +50,13 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        
+        // Configure Rigidbody for smooth movement
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        rb.useGravity = true;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        
         playerControls = new WJPlayerControls();
         
         // Subscribe to the Move action
@@ -129,17 +148,10 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
     private void ApplyMovement(Vector3 movement)
     {
-        if (isGrounded)
-        {
-            // Use MovePosition for precise ground movement
-            rb.MovePosition(rb.position + movement * (MOVE_SPEED * Time.fixedDeltaTime));
-        }
-        else
-        {
-            // In air, maintain vertical velocity but apply horizontal movement
-            Vector3 horizontalVelocity = new Vector3(movement.x * MOVE_SPEED, rb.velocity.y, movement.z * MOVE_SPEED);
-            rb.velocity = horizontalVelocity;
-        }
+        // Use velocity-based movement for both ground and air states
+        // This maintains smooth physics simulation and prevents teleportation
+        Vector3 desiredVelocity = new Vector3(movement.x * MOVE_SPEED, rb.velocity.y, movement.z * MOVE_SPEED);
+        rb.velocity = Vector3.Lerp(rb.velocity, desiredVelocity, 0.2f);
     }
 
     private void FixedUpdate()
