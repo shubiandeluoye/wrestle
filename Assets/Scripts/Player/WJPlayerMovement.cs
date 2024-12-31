@@ -1,22 +1,29 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Photon.Pun;
 using System.Collections;
+using System.Collections.Generic;
 
-[RequireComponent(typeof(Rigidbody))]
 public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 {
-    // Constants for drop animation and movement
+    // 常量定义
     private const float DROP_HEIGHT = 5f;
-    private const float DROP_DURATION = 2f;
-    private const float MOVE_SPEED = 5f;
+    private const float DROP_DURATION = 1f;
 
     [Header("Movement Settings")]
-    public float bounceForce = 10f;
-    
-    private WJPlayerControls playerControls;
+    [SerializeField] [Range(1f, 10f)] private float moveSpeed = 5f;
+    [SerializeField] [Range(0f, 20f)] private float rotationSpeed = 15f;
+
+    [Header("Physics Settings")]
+    [SerializeField] [Range(0f, 5f)] private float dragForce = 2f;
+    [SerializeField] [Range(0.1f, 5f)] private float mass = 1f;
+    [SerializeField] [Range(1f, 20f)] private float bounceForce = 10f;
+
+    [Header("Network Smoothing")]
+    [SerializeField] [Range(1f, 20f)] private float smoothSpeed = 10f;
+    [SerializeField] [Range(1f, 20f)] private float rotationSmoothSpeed = 10f;
+    [SerializeField] [Range(0.01f, 1f)] private float positionThreshold = 0.1f;
+
     private Rigidbody rb;
-    private Vector2 moveInput;
     private Vector3 networkPosition;
     private Quaternion networkRotation;
     private float networkLag;
@@ -24,151 +31,67 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     private bool isDropping = false;
     private bool isGrounded = false;
 
-    private bool IsGrounded()
-    {
-        // Raycast down slightly from player's position
-        RaycastHit hit;
-        bool wasGrounded = isGrounded;
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.1f))
-        {
-            bool newGrounded = hit.collider.CompareTag("Floor");
-            // Log state transitions for debugging
-            if (wasGrounded != newGrounded)
-            {
-                Debug.Log($"Ground state changed: {(newGrounded ? "Landed" : "Left ground")} at position {transform.position}");
-            }
-            return newGrounded;
-        }
-        // Log when leaving ground without floor below
-        if (wasGrounded)
-        {
-            Debug.Log($"Left ground (no floor detected) at position {transform.position}");
-        }
-        return false;
-    }
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         
-        // Configure Rigidbody for smooth movement
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.useGravity = true;
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        
-        playerControls = new WJPlayerControls();
-        
-        // Subscribe to the Move action
-        playerControls.Player.Move.performed += OnMove;
-        playerControls.Player.Move.canceled += OnMove;
+        rb.drag = dragForce;
+        rb.mass = mass;
 
-        // Find MapManager in scene
         mapManager = FindObjectOfType<WJMapManager>();
-        if (mapManager == null)
+    }
+
+    private void Update()
+    {
+        // 处理网络同步
+        if (!photonView.IsMine)
         {
-            Debug.LogWarning("MapManager not found in scene!");
-        }
-    }
-
-    private bool hasStartedGame = false;
-    
-    private void Start()
-    {
-        if (photonView.IsMine && !hasStartedGame)
-        {
-            hasStartedGame = true;
-            // Start drop sequence only once at game start
-            StartCoroutine(StartDropSequence());
-        }
-    }
-
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        playerControls.Enable();
-    }
-
-    public override void OnDisable()
-    {
-        base.OnDisable();
-        playerControls.Disable();
-    }
-
-    private void OnMove(InputAction.CallbackContext context)
-    {
-        if (!isDropping)
-        {
-            moveInput = context.ReadValue<Vector2>();
-        }
-    }
-
-    private IEnumerator StartDropSequence()
-    {
-        isDropping = true;
-        playerControls.Disable();
-        
-        // Store initial position and calculate drop start position
-        Vector3 endPos = transform.position;
-        Vector3 startPos = endPos + Vector3.up * DROP_HEIGHT;
-        
-        // Disable rigidbody physics during drop
-        rb.isKinematic = true;
-        transform.position = startPos;
-
-        float elapsed = 0f;
-        
-        while (elapsed < DROP_DURATION)
-        {
-            // Calculate smooth drop progress
-            float progress = elapsed / DROP_DURATION;
-            float smoothProgress = Mathf.SmoothStep(0f, 1f, progress);
-            
-            // Update position
-            transform.position = Vector3.Lerp(startPos, endPos, smoothProgress);
-            
-            elapsed += Time.deltaTime;
-            yield return null;
+            // 只有当位置差异超过阈值时才进行同步
+            float distance = Vector3.Distance(rb.position, networkPosition);
+            if (distance > positionThreshold)
+            {
+                // 使用平滑插值进行位置同步
+                rb.MovePosition(Vector3.Lerp(rb.position, networkPosition, smoothSpeed * Time.deltaTime));
+                // 使用平滑插值进行旋转同步
+                rb.MoveRotation(Quaternion.Lerp(rb.rotation, networkRotation, rotationSmoothSpeed * Time.deltaTime));
+            }
+            return;
         }
 
-        // Ensure final position is exact
-        transform.position = endPos;
+        if (isDropping) return;
+
+        // 检查是否在地面上
+        if (!isGrounded)
+        {
+            // 如果不在地面上，可以添加额外的处理
+            // 比如限制移动或者应用重力
+            return;
+        }
+
+        // 使用传统输入系统
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+
+        // 确保只能一个方向移动
+        if (Mathf.Abs(horizontal) > 0.1f)
+        {
+            vertical = 0;
+        }
+
+        Vector3 movement = new Vector3(horizontal, 0f, vertical);
         
-        // Re-enable physics and input
-        rb.isKinematic = false;
-        playerControls.Enable();
-        isDropping = false;
-    }
-
-    private Vector3 CalculateMovement(Vector2 input)
-    {
-        // Convert input to 3D movement vector
-        return new Vector3(input.x, 0f, input.y);
-    }
-
-    private void ApplyMovement(Vector3 movement)
-    {
-        // Use velocity-based movement for both ground and air states
-        // This maintains smooth physics simulation and prevents teleportation
-        Vector3 desiredVelocity = new Vector3(movement.x * MOVE_SPEED, rb.velocity.y, movement.z * MOVE_SPEED);
-        rb.velocity = Vector3.Lerp(rb.velocity, desiredVelocity, 0.2f);
-    }
-
-    private void FixedUpdate()
-    {
-        if (!photonView.IsMine || isDropping) return;
-
-        // Update grounded state
-        isGrounded = IsGrounded();
-
-        // Calculate and apply movement
-        Vector3 movement = CalculateMovement(moveInput);
-        ApplyMovement(movement);
-
-        // Rotate to face movement direction
         if (movement != Vector3.zero)
         {
-            transform.rotation = Quaternion.LookRotation(movement);
+            movement.Normalize();
+            Vector3 targetPosition = rb.position + movement * moveSpeed * Time.deltaTime;
+            rb.MovePosition(targetPosition);
+
+            Quaternion targetRotation = Quaternion.LookRotation(movement);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
         }
     }
 
@@ -178,7 +101,6 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
         GameObject hitObject = collision.gameObject;
 
-        // Handle rebound walls
         if (hitObject.CompareTag("ReboundWall"))
         {
             if (mapManager != null && mapManager.IsWallBounceEnabled(hitObject.name))
@@ -187,46 +109,55 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
                 rb.velocity = bounceDirection * bounceForce;
             }
         }
-        // Handle missile walls
-        else if (hitObject.CompareTag("MissileWall"))
-        {
-            // Future implementation: Handle missile wall specific behavior
-            Debug.Log("Hit missile wall: " + hitObject.name);
-        }
-        // Handle floor
         else if (hitObject.CompareTag("Floor"))
         {
-            // Future implementation: Handle floor specific behavior
-            Debug.Log("Hit floor: " + hitObject.name);
+            isGrounded = true;  // 设置接地状态
         }
     }
 
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Floor"))
+        {
+            isGrounded = false;  // 离开地面时更新状态
+        }
+    }
+
+    // 网络同步相关代码
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
             stream.SendNext(rb.position);
             stream.SendNext(rb.rotation);
-            stream.SendNext(moveInput);
+            stream.SendNext(rb.velocity);
             stream.SendNext(isDropping);
         }
         else
         {
             networkPosition = (Vector3)stream.ReceiveNext();
             networkRotation = (Quaternion)stream.ReceiveNext();
-            moveInput = (Vector2)stream.ReceiveNext();
+            rb.velocity = (Vector3)stream.ReceiveNext();
             isDropping = (bool)stream.ReceiveNext();
             networkLag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
         }
     }
 
-    private void Update()
+    private IEnumerator StartDropSequence()
     {
-        if (!photonView.IsMine)
+        isDropping = true;
+        float startTime = Time.time;
+        Vector3 startPos = new Vector3(transform.position.x, DROP_HEIGHT, transform.position.z);
+        Vector3 endPos = new Vector3(transform.position.x, 0f, transform.position.z);
+
+        while (Time.time - startTime < DROP_DURATION)
         {
-            // Smoothly interpolate position for remote players
-            rb.position = Vector3.Lerp(rb.position, networkPosition, Time.deltaTime * 10);
-            rb.rotation = Quaternion.Lerp(rb.rotation, networkRotation, Time.deltaTime * 10);
+            float t = (Time.time - startTime) / DROP_DURATION;
+            transform.position = Vector3.Lerp(startPos, endPos, t);
+            yield return null;
         }
+
+        transform.position = endPos;
+        isDropping = false;
     }
 }
