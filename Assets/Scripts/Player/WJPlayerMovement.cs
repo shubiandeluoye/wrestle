@@ -74,7 +74,7 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         
         // Store initial position and calculate drop start position
         Vector3 endPos = transform.position;
-        Vector3 startPos = endPos + Vector3.up * dropHeight;
+        Vector3 startPos = endPos + Vector3.up * DROP_HEIGHT;
         
         // Disable rigidbody physics during drop
         rb.isKinematic = true;
@@ -82,10 +82,10 @@ public class WJPlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
         float elapsed = 0f;
         
-        while (elapsed < dropDuration)
+        while (elapsed < DROP_DURATION)
         {
             // Calculate smooth drop progress
-            float progress = elapsed / dropDuration;
+            float progress = elapsed / DROP_DURATION;
             float smoothProgress = Mathf.SmoothStep(0f, 1f, progress);
             
             // Update position
