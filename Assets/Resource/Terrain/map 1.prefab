@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3961991571283651030}
   - component: {fileID: 833643053675924776}
   - component: {fileID: 3157681326635147354}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: 'RightFloor '
   m_TagString: Floor
   m_Icon: {fileID: 0}
@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c7252c3faf851aa458a10472a40499dc, type: 2}
+  - {fileID: 2100000, guid: a83e87d9dd207774f9580745a723d5df, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -141,9 +141,9 @@ GameObject:
   - component: {fileID: 414059316749290931}
   - component: {fileID: 1404929864825492669}
   - component: {fileID: 5352030714866647738}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: ReboundWall11
-  m_TagString: wall
+  m_TagString: ReboundWall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -157,8 +157,8 @@ Transform:
   m_GameObject: {fileID: 3349010429452429854}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.9, y: 0, z: -8.5}
-  m_LocalScale: {x: 103.75, y: 15, z: 1}
+  m_LocalPosition: {x: -0.7, y: 9.9, z: -5.3}
+  m_LocalScale: {x: 100, y: 20, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6631555112248371475}
@@ -273,7 +273,7 @@ GameObject:
   - component: {fileID: 1891847584939401983}
   - component: {fileID: 7024686501816218471}
   - component: {fileID: 4387786124858976450}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: AisleFloor
   m_TagString: Floor
   m_Icon: {fileID: 0}
@@ -379,9 +379,9 @@ GameObject:
   - component: {fileID: 6839225808797417}
   - component: {fileID: 7432492041268544715}
   - component: {fileID: 2990676184645783434}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: ReboundWall21
-  m_TagString: wall
+  m_TagString: ReboundWall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -395,8 +395,8 @@ Transform:
   m_GameObject: {fileID: 4797486412258749866}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -154.7, y: 0, z: -9.5}
-  m_LocalScale: {x: 103.75, y: 15, z: 1}
+  m_LocalPosition: {x: -151.5, y: 10.2, z: -6.3}
+  m_LocalScale: {x: 100, y: 20, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6631555112248371475}
@@ -484,9 +484,9 @@ GameObject:
   - component: {fileID: 7517123290382217819}
   - component: {fileID: 4999016183325305639}
   - component: {fileID: 6979958780876464941}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: MissileWall13
-  m_TagString: BulletPassage
+  m_TagString: MissleWall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -500,8 +500,8 @@ Transform:
   m_GameObject: {fileID: 4884090191685803529}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -50.63, y: 0, z: 42.1}
-  m_LocalScale: {x: 103.75, y: 5, z: 1}
+  m_LocalPosition: {x: -50.63, y: 0, z: 44.6}
+  m_LocalScale: {x: 100, y: 6.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6631555112248371475}
@@ -589,9 +589,9 @@ GameObject:
   - component: {fileID: 5524340747460419322}
   - component: {fileID: 4596571638312920105}
   - component: {fileID: 4163016262887647024}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: ReboundWall12
-  m_TagString: wall
+  m_TagString: ReboundWall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -605,8 +605,8 @@ Transform:
   m_GameObject: {fileID: 6561685137326151997}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.9, y: 0, z: 94.1}
-  m_LocalScale: {x: 103.75, y: 15, z: 1}
+  m_LocalPosition: {x: -1.1, y: 10, z: 95.4}
+  m_LocalScale: {x: 100, y: 20, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6631555112248371475}
@@ -694,9 +694,9 @@ GameObject:
   - component: {fileID: 8223287433988786529}
   - component: {fileID: 526830506789115876}
   - component: {fileID: 8933127709232240781}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: MissileWall23
-  m_TagString: BulletPassage
+  m_TagString: MissleWall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -710,8 +710,8 @@ Transform:
   m_GameObject: {fileID: 7256012016756708958}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -102.3, y: 0, z: 42.1}
-  m_LocalScale: {x: 103.75, y: 5, z: 1}
+  m_LocalPosition: {x: -102.3, y: 0, z: 44.2}
+  m_LocalScale: {x: 100, y: 6.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6631555112248371475}
@@ -799,9 +799,9 @@ GameObject:
   - component: {fileID: 4831331433788187472}
   - component: {fileID: 8934993829827663953}
   - component: {fileID: 5814154599730719400}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: ReboundWall22
-  m_TagString: wall
+  m_TagString: ReboundWall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -815,8 +815,8 @@ Transform:
   m_GameObject: {fileID: 7664040705629282980}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -154.7, y: 0, z: 94.1}
-  m_LocalScale: {x: 103.75, y: 15, z: 1}
+  m_LocalPosition: {x: -151.5, y: 10.9, z: 94.1}
+  m_LocalScale: {x: 100, y: 20, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6631555112248371475}
@@ -905,7 +905,7 @@ GameObject:
   - component: {fileID: 3047107462496514416}
   - component: {fileID: 6025076080520710089}
   - component: {fileID: 147680226142702370}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: LwftFloor
   m_TagString: Floor
   m_Icon: {fileID: 0}
@@ -955,7 +955,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c7252c3faf851aa458a10472a40499dc, type: 2}
+  - {fileID: 2100000, guid: a83e87d9dd207774f9580745a723d5df, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

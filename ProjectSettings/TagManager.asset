@@ -5,8 +5,11 @@ TagManager:
   serializedVersion: 2
   tags:
   - Floor
-  - wall
+  - MissleWall
+  - ReboundWall
   - BulletPassage
+  - Bullet
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -16,11 +19,11 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Bullet
+  - Wall
+  - BulletPassWall
+  - Floor
   - 
   - 
   - 
