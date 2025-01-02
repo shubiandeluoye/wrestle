@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using WJ.Core.Movement;
+using Assets.Scripts.WJ.Core.Movement;
 
-namespace WJ.Core.Input
+namespace Assets.Scripts.WJ.Core.Movement
 {
     public class WJJoystickInput : MonoBehaviour
     {

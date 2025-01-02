@@ -1,13 +1,12 @@
 using UnityEngine;
-using WJ.Core.Shooting.Data;
+using Assets.Scripts.WJ.Core.Audio;
 
-namespace WJ.Core.Shooting.Base
+namespace Assets.Scripts.WJ.Core.Shooting.Base
 {
     public class WJBaseShooter : MonoBehaviour
     {
         [Header("References")]
         [SerializeField] protected Transform firePoint;
-        [SerializeField] protected GameObject bulletPrefab;
         
         [Header("Settings")]
         [SerializeField] protected WJShooterData shooterData;
@@ -16,37 +15,40 @@ namespace WJ.Core.Shooting.Base
 
         protected float nextFireTime;
 
-        public virtual void TryShoot(float angle)
+        public virtual bool TryShoot(float angle)
         {
-            if (!canShoot || Time.time < nextFireTime || shooterData == null) return;
-
-            if (firePoint != null && bulletPrefab != null)
+            if (Time.time < nextFireTime || shooterData == null) 
             {
-                // 计算散布
-                Quaternion spread = CalculateSpread();
-                
-                // 实例化子弹
-                GameObject bullet = Instantiate(bulletPrefab, firePoint.position, 
-                    Quaternion.Euler(0, 0, angle) * spread);
-                
-                // 设置子弹速度
-                if (bullet.TryGetComponent<Rigidbody>(out var bulletRb))
-                {
-                    Vector2 direction = Quaternion.Euler(0, 0, angle) * 
-                        (isLeftPlayer ? Vector2.right : Vector2.left);
-                    
-                    bulletRb.velocity = new Vector3(direction.x, direction.y, 0) * 
-                        shooterData.bulletSpeed;
-                }
-
-                // 更新下次射击时间
-                nextFireTime = Time.time + shooterData.fireRate;
+                Debug.Log($"[Shooter] Cannot shoot: Time={Time.time}, NextFire={nextFireTime}, HasData={shooterData != null}");
+                return false;
             }
+
+            Debug.Log($"[Shooter] Attempting to shoot at angle: {angle}");
+            
+            GameObject bullet = Instantiate(
+                shooterData.bulletPrefab,
+                firePoint.position,
+                Quaternion.identity
+            );
+
+            if (bullet.TryGetComponent<WJBaseBullet>(out var bulletComponent))
+            {
+                bulletComponent.Initialize(angle, isLeftPlayer);
+                WJAudioManager.Instance?.PlayShootSound();
+                Debug.Log($"[Shooter] Bullet initialized with angle: {angle}, isLeftPlayer: {isLeftPlayer}");
+            }
+            else
+            {
+                Debug.LogError("[Shooter] WJBaseBullet component not found on bullet prefab!");
+            }
+
+            nextFireTime = Time.time + shooterData.fireRate;
+            return true;
         }
 
         protected virtual Quaternion CalculateSpread()
         {
-            if (shooterData == null || shooterData.spread <= 0) 
+            if (shooterData == null || shooterData.spread <= 0)
                 return Quaternion.identity;
 
             float spreadX = Random.Range(-shooterData.spread, shooterData.spread);
@@ -60,6 +62,13 @@ namespace WJ.Core.Shooting.Base
             if (firePoint != null)
             {
                 Gizmos.color = Color.red;
+                Gizmos.DrawRay(firePoint.position, Vector3.right);
+                Gizmos.color = Color.green;
+                Gizmos.DrawRay(firePoint.position, Vector3.up);
+                Gizmos.color = Color.blue;
+                Gizmos.DrawRay(firePoint.position, Vector3.forward);
+                
+                Gizmos.color = Color.yellow;
                 Gizmos.DrawRay(firePoint.position, firePoint.forward * 2f);
             }
         }

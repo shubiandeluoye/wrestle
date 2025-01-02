@@ -1,208 +1,138 @@
 using UnityEngine;
+using Assets.Scripts.WJ.Core.Game;
+using Assets.Scripts.WJ.Core.Player.Controllers;
+using Assets.Scripts.WJ.Core.Audio;
 
-namespace WJ.Core.Combat
+namespace Assets.Scripts.WJ.Core.Shooting.Base
 {
     [RequireComponent(typeof(Rigidbody))]
     public class WJBaseBullet : MonoBehaviour
     {
-        [SerializeField] protected WJBulletData bulletData;
-        
-        protected Rigidbody rb;
-        protected float currentDamage;
-        protected int hitsRemaining;
-        protected float spawnTime;
+        [Header("Settings")]
+        [SerializeField] private float speed = 6f;
+        [SerializeField] private float maxDistance = 30f;
+        [SerializeField] private int maxBounces = 3;
 
-        protected ParticleSystem activeTrailEffect;
-        protected TrailRenderer activeTrailRenderer;
-        protected AudioSource audioSource;
+        private Vector3 direction;
+        private Vector3 startPosition;
+        private Rigidbody rb;
+        private float startTime;
+        private int bounceCount = 0;
 
-        protected virtual void Awake()
+        private void Awake()
         {
             rb = GetComponent<Rigidbody>();
-            InitializeBullet();
-        }
-
-        protected virtual void InitializeBullet()
-        {
-            if (bulletData == null) return;
-
-            // 基础设置
-            currentDamage = bulletData.damage;
-            spawnTime = Time.time;
-            hitsRemaining = bulletData.type == WJBulletData.BulletType.Penetrating ? 
-                           bulletData.penetrationCount : 1;
-
-            // 设置子弹模型
-            if (bulletData.bulletModel != null)
+            if (rb != null)
             {
-                Instantiate(bulletData.bulletModel, transform);
-            }
-
-            // 添加拖尾特效
-            if (bulletData.trailEffect != null)
-            {
-                activeTrailEffect = Instantiate(bulletData.trailEffect, transform);
-            }
-
-            // 添加拖尾渲染器
-            if (bulletData.bulletTrail != null)
-            {
-                activeTrailRenderer = Instantiate(bulletData.bulletTrail, transform);
-            }
-
-            // 设置音频
-            SetupAudio();
-        }
-
-        protected virtual void SetupAudio()
-        {
-            if (bulletData.hitSound != null)
-            {
-                audioSource = gameObject.AddComponent<AudioSource>();
-                audioSource.playOnAwake = false;
-                audioSource.volume = bulletData.soundVolume;
+                rb.useGravity = false;
+                rb.constraints = RigidbodyConstraints.FreezePositionY | 
+                               RigidbodyConstraints.FreezeRotation;
+                rb.interpolation = RigidbodyInterpolation.Interpolate;
+                rb.detectCollisions = true;
             }
         }
 
-        protected virtual void Update()
+        public void Initialize(float angle, bool isLeftPlayer)
         {
-            if (Time.time - spawnTime >= bulletData.lifeTime)
+            startPosition = transform.position;
+            startTime = Time.time;
+            
+            // 基础方向
+            float directionMultiplier = isLeftPlayer ? 1f : -1f;
+            
+            // 计算发射方向
+            switch (angle)
             {
-                DestroyBullet();
-            }
-        }
-
-        protected virtual void OnCollisionEnter(Collision collision)
-        {
-            switch (bulletData.type)
-            {
-                case WJBulletData.BulletType.Normal:
-                    HandleNormalHit(collision);
+                case 0:  // 水平
+                    direction = new Vector3(directionMultiplier, 0, 0);
                     break;
-
-                case WJBulletData.BulletType.Explosive:
-                    HandleExplosiveHit(collision);
+                case 30:  // 上30度
+                    direction = new Vector3(directionMultiplier * 0.866f, 0, 0.5f);
                     break;
-
-                case WJBulletData.BulletType.Penetrating:
-                    HandlePenetratingHit(collision);
+                case -30:  // 下30度
+                    direction = new Vector3(directionMultiplier * 0.866f, 0, -0.5f);
+                    break;
+                case 45:  // 上45度
+                    direction = new Vector3(directionMultiplier * 0.707f, 0, 0.707f);
+                    break;
+                case -45:  // 下45度
+                    direction = new Vector3(directionMultiplier * 0.707f, 0, -0.707f);
+                    break;
+                default:
+                    direction = new Vector3(directionMultiplier, 0, 0);
                     break;
             }
-        }
 
-        protected virtual void HandleNormalHit(Collision collision)
-        {
-            ApplyDamage(collision.gameObject);
-            CreateHitEffect(collision);
-            DestroyBullet();
-        }
-
-        protected virtual void HandleExplosiveHit(Collision collision)
-        {
-            // 创建爆炸效果
-            CreateHitEffect(collision);
-
-            // 检测范围内的物体
-            Collider[] colliders = Physics.OverlapSphere(transform.position, bulletData.explosionRadius);
-            foreach (Collider hit in colliders)
+            direction = direction.normalized;
+            transform.forward = direction;
+            
+            if (rb != null)
             {
-                // 对范围内物体造成伤害
-                ApplyDamage(hit.gameObject);
+                rb.velocity = direction * speed;
+            }
+        }
 
-                // 添加爆炸力
-                Rigidbody rb = hit.GetComponent<Rigidbody>();
-                if (rb != null)
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision.gameObject.CompareTag("Player"))
+            {
+                WJAudioManager.Instance?.PlayHitSound();  // 播放击中声音
+                var scoreManager = FindObjectOfType<WJNetworkScoreManager>();
+                if (scoreManager != null)
                 {
-                    rb.AddExplosionForce(bulletData.explosionForce, transform.position, bulletData.explosionRadius);
+                    var playerController = collision.gameObject.GetComponent<WJPlayerController>();
+                    if (playerController != null)
+                    {
+                        // 被击中的玩家扣分
+                        scoreManager.DeductScore(playerController.IsLeftPlayer);
+                    }
                 }
+                Destroy(gameObject);
+                return;
             }
 
-            DestroyBullet();
-        }
-
-        protected virtual void HandlePenetratingHit(Collision collision)
-        {
-            ApplyDamage(collision.gameObject);
-            CreateHitEffect(collision);
-
-            hitsRemaining--;
-            currentDamage *= (1f - bulletData.damageReductionPerHit);
-
-            if (hitsRemaining <= 0)
+            // 达到最大反弹次数，销毁子弹
+            if (bounceCount >= maxBounces)
             {
-                DestroyBullet();
-            }
-        }
-
-        protected virtual void ApplyDamage(GameObject target)
-        {
-            // 这里添加伤害处理逻辑
-            // 例如：target.GetComponent<Health>()?.TakeDamage(currentDamage);
-        }
-
-        protected virtual void CreateHitEffect(Collision collision)
-        {
-            Vector3 hitPoint = collision.contacts[0].point;
-            Quaternion hitRotation = Quaternion.LookRotation(collision.contacts[0].normal);
-
-            // 播放击中特效
-            if (bulletData.hitEffect != null)
-            {
-                Instantiate(bulletData.hitEffect, hitPoint, hitRotation);
+                Destroy(gameObject);
+                return;
             }
 
-            // 根据子弹类型播放特殊特效
-            switch (bulletData.type)
+            // 处理反弹
+            WJAudioManager.Instance?.PlayBounceSound();  // 播放反弹声音
+            Vector3 normal = collision.contacts[0].normal;
+            normal.y = 0;
+            normal.Normalize();
+            
+            Vector3 reflectDir = Vector3.Reflect(direction, normal);
+            reflectDir.y = 0;
+            reflectDir.Normalize();
+            
+            transform.position += normal * 0.1f;
+            direction = reflectDir;
+            transform.forward = direction;
+            
+            if (rb != null)
             {
-                case WJBulletData.BulletType.Explosive:
-                    if (bulletData.explosionEffect != null)
-                    {
-                        Instantiate(bulletData.explosionEffect, hitPoint, hitRotation);
-                    }
-                    break;
-
-                case WJBulletData.BulletType.Penetrating:
-                    if (bulletData.penetrationEffect != null)
-                    {
-                        Instantiate(bulletData.penetrationEffect, hitPoint, hitRotation);
-                    }
-                    break;
+                rb.velocity = Vector3.zero;
+                rb.velocity = direction * speed;
+                rb.angularVelocity = Vector3.zero;
             }
 
-            // 播放击中音效
-            if (audioSource != null && bulletData.hitSound != null)
-            {
-                audioSource.PlayOneShot(bulletData.hitSound);
-            }
+            bounceCount++;
         }
 
-        protected virtual void DestroyBullet()
+        private void Update()
         {
-            Destroy(gameObject);
-        }
-
-        // 公共方法用于设置子弹数据
-        public virtual void SetBulletData(WJBulletData data)
-        {
-            bulletData = data;
-            InitializeBullet();
-        }
-
-        protected virtual void OnDestroy()
-        {
-            // 确保特效正确清理
-            if (activeTrailEffect != null)
+            // 超出最大距离销毁
+            float distance = Vector3.Distance(
+                new Vector3(transform.position.x, 0, transform.position.z),
+                new Vector3(startPosition.x, 0, startPosition.z)
+            );
+            
+            if (distance > maxDistance)
             {
-                activeTrailEffect.transform.SetParent(null);
-                var main = activeTrailEffect.main;
-                main.stopAction = ParticleSystemStopAction.Destroy;
-                activeTrailEffect.Stop();
-            }
-
-            if (activeTrailRenderer != null)
-            {
-                activeTrailRenderer.transform.SetParent(null);
-                Destroy(activeTrailRenderer.gameObject, activeTrailRenderer.time);
+                Destroy(gameObject);
             }
         }
     }

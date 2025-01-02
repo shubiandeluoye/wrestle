@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WJ.Core.Combat
+namespace Assets.Scripts.WJ.Core.Shooting.Data
 {
     [CreateAssetMenu(fileName = "WJBulletData", menuName = "WJ/Combat/BulletData")]
     public class WJBulletData : ScriptableObject
