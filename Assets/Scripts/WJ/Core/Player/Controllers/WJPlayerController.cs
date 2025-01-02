@@ -4,12 +4,10 @@ using WJ.Core.Input;
 using Assets.Scripts.WJ.Core.Movement;
 using UnityEngine.InputSystem;
 using Assets.Scripts.WJ.Core.Game;
-using Fusion;
-using Assets.Scripts.WJ.Core.Network;
 
 namespace Assets.Scripts.WJ.Core.Player.Controllers
 {
-    public class WJPlayerController : NetworkBehaviour, WJInputActions.IPlayerActions
+    public class WJPlayerController : MonoBehaviour, WJInputActions.IPlayerActions
     {
         [Header("Components")]
         [SerializeField] private WJBaseMovement movement;
@@ -23,24 +21,19 @@ namespace Assets.Scripts.WJ.Core.Player.Controllers
         [SerializeField] private float angle30 = 30f;
         [SerializeField] private float angle45 = 45f;
         
-        private bool isAngle30 = true;  // true = 30度, false = 45度
-
+        private bool isAngle30 = true;
         private WJInputActions inputActions;
 
-        public bool IsLeftPlayer { get; private set; }
-
         [Header("Bounds Check")]
-        [SerializeField] private float minY = -10f;  // Y轴最低点
+        [SerializeField] private float minY = -10f;
 
-        [Networked]
-        private NetworkButtons ButtonsPrevious { get; set; }
+        private int playerId;
 
         private void Awake()
         {
             inputActions = new WJInputActions();
             inputActions.Player.SetCallbacks(this);
-            inputActions.Player.Enable();
-            IsLeftPlayer = isLeftPlayer;
+            inputActions.Enable();
         }
 
         public void OnMovement(InputAction.CallbackContext context)
@@ -54,51 +47,27 @@ namespace Assets.Scripts.WJ.Core.Player.Controllers
 
         public void OnStraightShoot(InputAction.CallbackContext context)
         {
-            if (context.performed)
+            if (context.performed && shooter != null)
             {
-                Debug.Log("[PlayerController] Straight shoot input received");
-                if (shooter != null)
-                {
-                    shooter.TryShoot(0f);
-                }
-                else
-                {
-                    Debug.LogError("[PlayerController] Shooter component is null!");
-                }
+                shooter.TryShoot(0f);
             }
         }
 
         public void OnUpShoot(InputAction.CallbackContext context)
         {
-            if (context.performed)
+            if (context.performed && shooter != null)
             {
-                Debug.Log("[PlayerController] Up shoot input received");
-                if (shooter != null)
-                {
-                    float currentAngle = isAngle30 ? angle30 : angle45;
-                    shooter.TryShoot(currentAngle);
-                }
-                else
-                {
-                    Debug.LogError("[PlayerController] Shooter component is null!");
-                }
+                float currentAngle = isAngle30 ? angle30 : angle45;
+                shooter.TryShoot(currentAngle);
             }
         }
 
         public void OnDownShoot(InputAction.CallbackContext context)
         {
-            if (context.performed)
+            if (context.performed && shooter != null)
             {
-                Debug.Log("[PlayerController] Down shoot input received");
-                if (shooter != null)
-                {
-                    float currentAngle = isAngle30 ? angle30 : angle45;
-                    shooter.TryShoot(-currentAngle);
-                }
-                else
-                {
-                    Debug.LogError("[PlayerController] Shooter component is null!");
-                }
+                float currentAngle = isAngle30 ? angle30 : angle45;
+                shooter.TryShoot(-currentAngle);
             }
         }
 
@@ -125,10 +94,10 @@ namespace Assets.Scripts.WJ.Core.Player.Controllers
             // 检查是否掉出地图
             if (transform.position.y < minY)
             {
-                var scoreManager = FindObjectOfType<WJNetworkScoreManager>();
+                var scoreManager = FindObjectOfType<WJScoreManager>();
                 if (scoreManager != null)
                 {
-                    scoreManager.PlayerOutOfBounds(IsLeftPlayer);
+                    scoreManager.PlayerOutOfBounds(this);
                 }
             }
         }
@@ -142,33 +111,29 @@ namespace Assets.Scripts.WJ.Core.Player.Controllers
             }
         }
 
-        private void TryShoot(float angle)
+        public bool GetIsLeftPlayer()
         {
-            if (shooter != null)
-            {
-                shooter.TryShoot(angle);
-            }
+            return playerId == 1 || playerId == 3;
         }
 
-        public override void FixedUpdateNetwork()
+        public void SetPlayerSide(bool isLeft)
         {
-            if (GetInput(out NetworkInputData data))
-            {
-                // 处理移动
-                if (movement != null)
-                    movement.Move(data.movement);
+            isLeftPlayer = isLeft;
+        }
 
-                // 处理射击
-                var pressed = data.buttons.GetPressed(ButtonsPrevious);
-                if (pressed.IsSet(NetworkInputButtons.Shoot))
-                    TryShoot(0);
-                if (pressed.IsSet(NetworkInputButtons.UpShoot))
-                    TryShoot(isAngle30 ? angle30 : angle45);
-                if (pressed.IsSet(NetworkInputButtons.DownShoot))
-                    TryShoot(isAngle30 ? -angle30 : -angle45);
+        public void SetPlayerId(int id)
+        {
+            playerId = id;
+        }
 
-                ButtonsPrevious = data.buttons;
-            }
+        public int GetTeamId()
+        {
+            return (playerId % 2 == 1) ? 1 : 2;
+        }
+
+        public int GetPlayerId()
+        {
+            return playerId;
         }
     }
 }

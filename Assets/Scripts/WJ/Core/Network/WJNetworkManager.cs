@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Collections.Generic;
 using Fusion.Sockets;
+using Assets.Scripts.WJ.Core.Player.Controllers;
 
 namespace Assets.Scripts.WJ.Core.Network
 {
@@ -11,6 +12,7 @@ namespace Assets.Scripts.WJ.Core.Network
     {
         [SerializeField] private NetworkRunner networkRunnerPrefab;
         [SerializeField] private NetworkInputHandler inputHandlerPrefab;
+        [SerializeField] private bool useLocalMode = true;  // 添加本地模式开关
         
         private NetworkRunner runner;
         private NetworkInputHandler inputHandler;
@@ -19,28 +21,72 @@ namespace Assets.Scripts.WJ.Core.Network
 
         public async void StartGame(GameMode mode)
         {
-            if (runner == null)
-                runner = Instantiate(networkRunnerPrefab);
-
-            runner.AddCallbacks(this);
-
-            var startGameArgs = new StartGameArgs()
+            if (useLocalMode)
             {
-                GameMode = mode,
-                SessionName = "WJGame",
-                SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
-            };
-
-            await runner.StartGame(startGameArgs);
-            
-            // 创建输入处理器
-            if (inputHandler == null)
-            {
-                inputHandler = Instantiate(inputHandlerPrefab);
-                inputHandler.Init(runner);
+                // 本地测试模式
+                SpawnLocalPlayers();
+                return;
             }
 
-            OnJoinedGame?.Invoke(runner);
+            // 确保有正确的配置
+            if (networkRunnerPrefab == null)
+            {
+                Debug.LogError("Network Runner Prefab is not set!");
+                return;
+            }
+
+            try
+            {
+                if (runner == null)
+                    runner = Instantiate(networkRunnerPrefab);
+
+                runner.AddCallbacks(this);
+
+                var startGameArgs = new StartGameArgs()
+                {
+                    GameMode = mode,
+                    SessionName = "WJGame",
+                    SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
+                };
+
+                Debug.Log("Starting Fusion connection...");
+                await runner.StartGame(startGameArgs);
+                Debug.Log("Fusion connection started!");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error starting game: {e.Message}");
+            }
+        }
+
+        private void SpawnLocalPlayers()
+        {
+            // 生成本地玩家1
+            Vector3 leftSpawnPoint = new Vector3(-8, 0, 0);
+            GameObject leftPlayer = Instantiate(
+                NetworkPrefabsRef.Instance.localPlayerPrefab,
+                leftSpawnPoint,
+                Quaternion.identity
+            );
+            if (leftPlayer.TryGetComponent<WJPlayerController>(out var leftController))
+            {
+                leftController.SetPlayerSide(true);  // 使用 SetPlayerSide 而不是直接设置 IsLeftPlayer
+            }
+
+            // 生成本地玩家2
+            Vector3 rightSpawnPoint = new Vector3(8, 0, 0);
+            GameObject rightPlayer = Instantiate(
+                NetworkPrefabsRef.Instance.localPlayerPrefab,
+                rightSpawnPoint,
+                Quaternion.identity
+            );
+            if (rightPlayer.TryGetComponent<WJPlayerController>(out var rightController))
+            {
+                rightController.SetPlayerSide(false);  // 使用 SetPlayerSide 而不是直接设置 IsLeftPlayer
+            }
+
+            // 生成计分板
+            Instantiate(NetworkPrefabsRef.Instance.localScorePrefab);
         }
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -49,7 +95,13 @@ namespace Assets.Scripts.WJ.Core.Network
             {
                 // 生成玩家
                 Vector3 spawnPoint = GetSpawnPoint(player);
-                runner.Spawn(NetworkPrefabsRef.Instance.playerPrefab, spawnPoint, Quaternion.identity, player);
+                var playerObject = runner.Spawn(NetworkPrefabsRef.Instance.playerPrefab, spawnPoint, Quaternion.identity, player);
+                
+                // 设置玩家位置信息
+                if (playerObject.TryGetComponent<WJPlayerController>(out var controller))
+                {
+                    controller.SetPlayerSide(player.PlayerId == 1);  // 使用 SetPlayerSide 方法
+                }
 
                 // 如果是第一个玩家，生成计分板
                 if (player.PlayerId == 1)

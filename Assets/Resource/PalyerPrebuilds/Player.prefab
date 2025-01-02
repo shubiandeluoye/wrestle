@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 2327876495831989654}
   - component: {fileID: 4005806559639828653}
   - component: {fileID: 5639232160406955957}
+  - component: {fileID: 3777783583486254731}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -216,8 +217,11 @@ MonoBehaviour:
   movement: {fileID: 2789515660470264158}
   shooter: {fileID: 5639232160406955957}
   shootPoint: {fileID: 4294011581815465104}
+  isLeftPlayer: 0
   angle30: 30
   angle45: 45
+  _IsLeftPlayer: 0
+  minY: -10
 --- !u!114 &5639232160406955957
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,8 +236,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   firePoint: {fileID: 4294011581815465104}
   shooterData: {fileID: 11400000, guid: 95ce45781739dfe44b5cd7cde94d7a7d, type: 2}
-  canShoot: 1
   isLeftPlayer: 1
+--- !u!114 &3777783583486254731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3510337249132066211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 3160656639
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 4005806559639828653}
+  - {fileID: 5639232160406955957}
 --- !u!1 &6094725575644963341
 GameObject:
   m_ObjectHideFlags: 0

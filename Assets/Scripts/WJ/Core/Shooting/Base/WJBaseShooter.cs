@@ -1,5 +1,6 @@
 using UnityEngine;
 using Assets.Scripts.WJ.Core.Audio;
+using Assets.Scripts.WJ.Core.Player.Controllers;
 
 namespace Assets.Scripts.WJ.Core.Shooting.Base
 {
@@ -18,13 +19,8 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
         public virtual bool TryShoot(float angle)
         {
             if (Time.time < nextFireTime || shooterData == null) 
-            {
-                Debug.Log($"[Shooter] Cannot shoot: Time={Time.time}, NextFire={nextFireTime}, HasData={shooterData != null}");
                 return false;
-            }
 
-            Debug.Log($"[Shooter] Attempting to shoot at angle: {angle}");
-            
             GameObject bullet = Instantiate(
                 shooterData.bulletPrefab,
                 firePoint.position,
@@ -33,28 +29,15 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
 
             if (bullet.TryGetComponent<WJBaseBullet>(out var bulletComponent))
             {
-                bulletComponent.Initialize(angle, isLeftPlayer);
+                var playerController = GetComponentInParent<WJPlayerController>();
+                int shooterId = playerController != null ? playerController.GetPlayerId() : -1;
+
+                bulletComponent.Initialize(angle, shooterId);
                 WJAudioManager.Instance?.PlayShootSound();
-                Debug.Log($"[Shooter] Bullet initialized with angle: {angle}, isLeftPlayer: {isLeftPlayer}");
-            }
-            else
-            {
-                Debug.LogError("[Shooter] WJBaseBullet component not found on bullet prefab!");
             }
 
             nextFireTime = Time.time + shooterData.fireRate;
             return true;
-        }
-
-        protected virtual Quaternion CalculateSpread()
-        {
-            if (shooterData == null || shooterData.spread <= 0)
-                return Quaternion.identity;
-
-            float spreadX = Random.Range(-shooterData.spread, shooterData.spread);
-            float spreadY = Random.Range(-shooterData.spread, shooterData.spread);
-            
-            return Quaternion.Euler(spreadX, spreadY, 0f);
         }
 
         protected virtual void OnDrawGizmos()

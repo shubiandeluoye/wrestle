@@ -2,6 +2,7 @@ using UnityEngine;
 using Fusion;
 using System;
 using Assets.Scripts.WJ.Core.Audio;
+using Assets.Scripts.WJ.Core.Player.Controllers;
 
 namespace Assets.Scripts.WJ.Core.Game
 {
@@ -94,15 +95,11 @@ namespace Assets.Scripts.WJ.Core.Game
         }
 
         // 处理玩家掉出地图的情况
-        public void PlayerOutOfBounds(bool isLeftPlayer)
+        public void PlayerOutOfBounds(WJPlayerController player)
         {
-            if (!Object.HasStateAuthority) return;
-
-            if (!IsGameOver)  // 确保游戏还没结束
+            if (player != null)
             {
-                IsGameOver = true;
-                // 掉出地图的玩家失败，对方获胜
-                RPC_OnGameOver(!isLeftPlayer, "对手掉出地图");
+                DeductScore(player.GetIsLeftPlayer());
             }
         }
     }

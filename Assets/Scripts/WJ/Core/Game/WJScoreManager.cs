@@ -1,77 +1,72 @@
 using UnityEngine;
-using UnityEngine.Events;
+using System;
+using Assets.Scripts.WJ.Core.Audio;
+using Assets.Scripts.WJ.Core.Player.Controllers;
 
 namespace Assets.Scripts.WJ.Core.Game
 {
     public class WJScoreManager : MonoBehaviour
     {
-        [System.Serializable]
-        public class ScoreData
+        private int leftPlayerScore = 99;
+        private int rightPlayerScore = 99;
+        private bool isGameOver;
+        [SerializeField] private int minScore = 0;
+
+        public static event Action<int, int> OnScoreChanged;
+        public static event Action<bool, string> OnGameOver;
+
+        private void Start()
         {
-            public int currentScore = 0;
-            public int targetScore = 5;  // 获胜所需分数
+            ResetScore();
         }
 
-        [Header("Score Settings")]
-        [SerializeField] private ScoreData leftPlayerScore = new ScoreData();
-        [SerializeField] private ScoreData rightPlayerScore = new ScoreData();
-        
-        [Header("Events")]
-        public UnityEvent<int, int> onScoreChanged;  // 参数：左玩家分数，右玩家分数
-        public UnityEvent<bool> onGameOver;          // 参数：左玩家是否获胜
-
-        public static WJScoreManager Instance { get; private set; }
-
-        private void Awake()
+        public void DeductScore(bool isLeftPlayer)
         {
-            if (Instance == null)
+            if (isLeftPlayer)
             {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
+                leftPlayerScore = Mathf.Max(minScore, leftPlayerScore - 1);
             }
             else
             {
-                Destroy(gameObject);
+                rightPlayerScore = Mathf.Max(minScore, rightPlayerScore - 1);
             }
+
+            OnScoreChanged?.Invoke(leftPlayerScore, rightPlayerScore);
+            CheckGameOver();
         }
 
-        public void AddScore(bool isLeftPlayer, int score = 1)
+        private void CheckGameOver()
         {
-            ScoreData playerScore = isLeftPlayer ? leftPlayerScore : rightPlayerScore;
-            playerScore.currentScore += score;
-            
-            Debug.Log($"[Score] {(isLeftPlayer ? "Left" : "Right")} player scored! Current: {playerScore.currentScore}");
-            
-            // 触发分数变化事件
-            onScoreChanged?.Invoke(leftPlayerScore.currentScore, rightPlayerScore.currentScore);
-            
-            // 检查是否达到胜利条件
-            CheckWinCondition();
-        }
-
-        private void CheckWinCondition()
-        {
-            bool leftPlayerWon = leftPlayerScore.currentScore >= leftPlayerScore.targetScore;
-            bool rightPlayerWon = rightPlayerScore.currentScore >= rightPlayerScore.targetScore;
-
-            if (leftPlayerWon || rightPlayerWon)
+            if (leftPlayerScore <= minScore || rightPlayerScore <= minScore)
             {
-                Debug.Log($"[Score] Game Over! {(leftPlayerWon ? "Left" : "Right")} player won!");
-                onGameOver?.Invoke(leftPlayerWon);
+                isGameOver = true;
+                bool leftPlayerWon = rightPlayerScore <= minScore;
+                OnGameOver?.Invoke(leftPlayerWon, "分数耗尽");
+                WJAudioManager.Instance?.PlayGameOverSound();
             }
         }
 
-        public void ResetScores()
+        public void ResetScore()
         {
-            leftPlayerScore.currentScore = 0;
-            rightPlayerScore.currentScore = 0;
-            onScoreChanged?.Invoke(0, 0);
-            Debug.Log("[Score] Scores reset");
+            leftPlayerScore = 99;
+            rightPlayerScore = 99;
+            isGameOver = false;
+            OnScoreChanged?.Invoke(99, 99);
         }
 
-        public (int left, int right) GetCurrentScores()
+        public (int left, int right) GetCurrentScore()
         {
-            return (leftPlayerScore.currentScore, rightPlayerScore.currentScore);
+            return (leftPlayerScore, rightPlayerScore);
+        }
+
+        public void PlayerOutOfBounds(WJPlayerController player)
+        {
+            if (!isGameOver)
+            {
+                isGameOver = true;
+                OnGameOver?.Invoke(!player.GetIsLeftPlayer(), "对手掉出地图");
+                WJAudioManager.Instance?.PlayGameOverSound();
+            }
         }
     }
 } 
