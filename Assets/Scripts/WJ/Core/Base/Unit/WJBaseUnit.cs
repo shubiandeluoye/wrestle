@@ -1,14 +1,44 @@
 using UnityEngine;
 
-public class WJBaseUnit : MonoBehaviour
+namespace WJ.Core.Base.Unit
 {
-    public const float UNIT_SIZE = 1f;
-    public const float BASE_SPEED = 10f;
-    public const float BASE_ROTATION_SPEED = 90f;
-    public const float BASE_SCALE = 1f;
+    [RequireComponent(typeof(WJBaseMovement))]
+    [RequireComponent(typeof(WJBaseHealth))]
+    public class WJBaseUnit : MonoBehaviour
+    {
+        protected WJBaseMovement movement;
+        protected WJBaseHealth health;
+        protected WJBaseShooter shooter;
 
-    public static readonly Vector3 ORIGIN_POSITION = Vector3.zero;
-    public static readonly Vector3 UP_POSITION = Vector3.up * UNIT_SIZE * 10f;
-    public static readonly Vector3 RIGHT_POSITION = Vector3.right * UNIT_SIZE * 10f;
-    public static readonly Vector3 FORWARD_POSITION = Vector3.forward * UNIT_SIZE * 10f;
+        protected virtual void Awake()
+        {
+            movement = GetComponent<WJBaseMovement>();
+            health = GetComponent<WJBaseHealth>();
+            shooter = GetComponent<WJBaseShooter>();
+        }
+
+        public virtual void Move(Vector2 input)
+        {
+            if (movement != null)
+            {
+                movement.Move(input);
+            }
+        }
+
+        public virtual void Shoot(Vector3 direction)
+        {
+            if (shooter != null)
+            {
+                shooter.Shoot(direction);
+            }
+        }
+
+        public virtual void TakeDamage(float damage)
+        {
+            if (health != null)
+            {
+                health.TakeDamage(damage);
+            }
+        }
+    }
 }
