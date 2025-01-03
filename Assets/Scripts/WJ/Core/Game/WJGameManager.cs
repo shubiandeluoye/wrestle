@@ -1,21 +1,38 @@
 using UnityEngine;
-using Assets.Scripts.WJ.Core.Player.Controllers;
+using Assets.Scripts.WJ.Core.Audio;
 
 namespace Assets.Scripts.WJ.Core.Game
 {
     public class WJGameManager : MonoBehaviour
     {
-        [Header("Prefabs")]
-        [SerializeField] private GameObject playerPrefab;
-        [SerializeField] private GameObject scoreManagerPrefab;
+        public static WJGameManager Instance { get; private set; }
 
-        [Header("Spawn Settings - Left Player")]
-        [SerializeField] private Vector3 leftPlayerPosition = new Vector3(-90f, 80f, 0f);
-        [SerializeField] private Vector3 leftPlayerScale = new Vector3(12f, 12f, 12f);
+        [Header("Manager References")]
+        [SerializeField] private WJAudioManager audioManager;
 
-        [Header("Spawn Settings - Right Player")]
-        [SerializeField] private Vector3 rightPlayerPosition = new Vector3(90f, 80f, 0f);
-        [SerializeField] private Vector3 rightPlayerScale = new Vector3(12f, 12f, 12f);
+        [Header("Player Settings")]
+        [SerializeField] private GameObject playerPrefab;  // 玩家预制体
+        [SerializeField] private Transform player1SpawnPoint;  // 玩家1出生点
+        [SerializeField] private Transform player2SpawnPoint;  // 玩家2出生点
+
+        [Header("Game Mode")]
+        [SerializeField] private bool isSinglePlayer = true;  // 添加单人模式开关
+
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+                
+                if (audioManager == null)
+                    audioManager = GetComponentInChildren<WJAudioManager>();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
 
         private void Start()
         {
@@ -24,52 +41,29 @@ namespace Assets.Scripts.WJ.Core.Game
 
         private void SpawnPlayers()
         {
-            Debug.Log("Spawning players...");
-
-            // 生成左边玩家
-            GameObject leftPlayer = Instantiate(playerPrefab, leftPlayerPosition, Quaternion.identity);
-            leftPlayer.transform.localScale = leftPlayerScale;
-            if (leftPlayer.TryGetComponent<WJPlayerController>(out var leftController))
+            if (playerPrefab != null)
             {
-                leftController.SetPlayerId(1);  // 设置ID时会自动设置朝向
+                if (player1SpawnPoint != null)
+                {
+                    // 生成玩家1
+                    GameObject player1 = Instantiate(playerPrefab, player1SpawnPoint.position, player1SpawnPoint.rotation);
+                    player1.name = "Player1";
+                }
+                
+                // 只在双人模式下生成玩家2
+                if (!isSinglePlayer && player2SpawnPoint != null)
+                {
+                    GameObject player2 = Instantiate(playerPrefab, player2SpawnPoint.position, player2SpawnPoint.rotation);
+                    player2.name = "Player2";
+                }
             }
-
-            // 生成右边玩家
-            GameObject rightPlayer = Instantiate(playerPrefab, rightPlayerPosition, Quaternion.identity);
-            rightPlayer.transform.localScale = rightPlayerScale;
-            if (rightPlayer.TryGetComponent<WJPlayerController>(out var rightController))
+            else
             {
-                rightController.SetPlayerId(2);  // 设置ID时会自动设置朝向
+                Debug.LogError("Player prefab is not assigned!");
             }
-
-            // 生成计分板
-            Instantiate(scoreManagerPrefab);
-
-            Debug.Log($"Left player spawned at: {leftPlayerPosition}");
-            Debug.Log($"Right player spawned at: {rightPlayerPosition}");
         }
 
-#if UNITY_EDITOR
-        private void OnDrawGizmos()
-        {
-            // 增大显示尺寸
-            float gizmosRadius = 10f;  // 增大半径
-            
-            // 在场景视图中显示生成点
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(leftPlayerPosition, gizmosRadius);
-            // 添加方向指示
-            Gizmos.DrawLine(leftPlayerPosition, leftPlayerPosition + Vector3.up * 20f);
-            
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(rightPlayerPosition, gizmosRadius);
-            Gizmos.DrawLine(rightPlayerPosition, rightPlayerPosition + Vector3.up * 20f);
-
-            // 添加文字标签
-            UnityEditor.Handles.color = Color.white;
-            UnityEditor.Handles.Label(leftPlayerPosition + Vector3.up * 25f, "Left Player Spawn");
-            UnityEditor.Handles.Label(rightPlayerPosition + Vector3.up * 25f, "Right Player Spawn");
-        }
-#endif
+        // 提供访问器
+        public WJAudioManager AudioManager => audioManager;
     }
 } 

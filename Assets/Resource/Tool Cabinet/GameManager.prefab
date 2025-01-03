@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 3510337249132066211, guid: 3c7c6da30870095429b2d0ff973d3e25, type: 3}
   scoreManagerPrefab: {fileID: 267871129051896367, guid: e3393adc02ae8954188e0d5da94cd228, type: 3}
-  leftPlayerPosition: {x: -97.6, y: 80, z: 0}
+  leftPlayerPosition: {x: -14.8, y: 2, z: 5}
   leftPlayerScale: {x: 12, y: 12, z: 12}
-  rightPlayerPosition: {x: 90, y: 80, z: 0}
+  rightPlayerPosition: {x: 0, y: 2, z: 5}
   rightPlayerScale: {x: 12, y: 12, z: 12}

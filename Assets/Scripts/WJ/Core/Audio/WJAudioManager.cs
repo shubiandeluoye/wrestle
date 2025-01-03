@@ -2,15 +2,18 @@ using UnityEngine;
 
 namespace Assets.Scripts.WJ.Core.Audio
 {
+    [RequireComponent(typeof(AudioSource))]
     public class WJAudioManager : MonoBehaviour
     {
         public static WJAudioManager Instance { get; private set; }
 
-        [Header("Audio Sources")]
-        [SerializeField] private AudioSource shootSound;
-        [SerializeField] private AudioSource hitSound;
-        [SerializeField] private AudioSource bounceSound;
-        [SerializeField] private AudioSource gameOverSound;
+        [Header("Audio Clips")]
+        [SerializeField] private AudioClip shootSound;
+        [SerializeField] private AudioClip hitSound;
+        [SerializeField] private AudioClip bounceSound;
+        [SerializeField] private AudioClip gameOverSound;
+
+        private AudioSource audioSource;
 
         private void Awake()
         {
@@ -18,6 +21,7 @@ namespace Assets.Scripts.WJ.Core.Audio
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
+                audioSource = GetComponent<AudioSource>();
             }
             else
             {
@@ -27,22 +31,34 @@ namespace Assets.Scripts.WJ.Core.Audio
 
         public void PlayShootSound()
         {
-            if (shootSound != null) shootSound.Play();
+            if (shootSound != null)
+            {
+                audioSource.PlayOneShot(shootSound);
+            }
         }
 
         public void PlayHitSound()
         {
-            if (hitSound != null) hitSound.Play();
+            if (hitSound != null)
+            {
+                audioSource.PlayOneShot(hitSound);
+            }
         }
 
         public void PlayBounceSound()
         {
-            if (bounceSound != null) bounceSound.Play();
+            if (bounceSound != null)
+            {
+                audioSource.PlayOneShot(bounceSound);
+            }
         }
 
         public void PlayGameOverSound()
         {
-            if (gameOverSound != null) gameOverSound.Play();
+            if (gameOverSound != null)
+            {
+                audioSource.PlayOneShot(gameOverSound);
+            }
         }
     }
 } 
