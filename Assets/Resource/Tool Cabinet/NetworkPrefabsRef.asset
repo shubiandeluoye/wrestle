@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: NetworkPrefabsRef
   m_EditorClassIdentifier: 
   playerPrefab:
-    RawGuidValue: 00000000000000000000000000000000
+    RawGuidValue: 3c7c6da30870095429b2d0ff973d3e25
   scoreManagerPrefab:
-    RawGuidValue: 00000000000000000000000000000000
+    RawGuidValue: 29bfd822a3938a84094e0a3f3fb3b31d
   bulletPrefab:
-    RawGuidValue: 00000000000000000000000000000000
+    RawGuidValue: c9971d718ddf5324789c5e93f6a51a5d
+  localPlayerPrefab: {fileID: 7794748268009778407, guid: e6c9af420ccd1b6429e259d56bd50bc2, type: 3}
+  localScorePrefab: {fileID: 2363627684756517493, guid: 6eb6f5a9b15a284418ce046aca23f1e6, type: 3}
+  localBulletPrefab: {fileID: 4436758712384476667, guid: ccd1cb54e6f2e4f4884ebeae5ca2ba68, type: 3}

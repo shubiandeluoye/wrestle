@@ -2,7 +2,6 @@ using UnityEngine;
 using Assets.Scripts.WJ.Core.Game;
 using Assets.Scripts.WJ.Core.Audio;
 using Assets.Scripts.WJ.Core.Player.Controllers;
-using Assets.Scripts.WJ.Core.Shooting.Collectors;
 
 namespace Assets.Scripts.WJ.Core.Shooting.Base
 {
@@ -11,7 +10,7 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
     {
         [Header("Settings")]
         [SerializeField] private float speed = 6f;
-        [SerializeField] private float maxDistance = 30f;
+        [SerializeField] private float maxDistance = 50f;
         [SerializeField] private int maxBounces = 3;
 
         private Vector3 direction;
@@ -85,14 +84,13 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
         private void OnCollisionEnter(Collision collision)
         {
             // 检查是否碰到收集器
-            if (collision.gameObject.CompareTag("BulletCollector"))
+            if (collision.gameObject.CompareTag("Bullet"))
             {
                 var collector = collision.gameObject.GetComponent<BulletCollector>();
                 if (collector != null)
                 {
                     collector.CollectBullet(this);
                     isCollected = true;
-                    // 可以选择隐藏或销毁子弹
                     gameObject.SetActive(false);
                     return;
                 }
@@ -122,7 +120,10 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
 
                     if (canDamage)
                     {
-                        WJAudioManager.Instance?.PlayHitSound();
+                        if (WJAudioManager.Instance != null)
+                        {
+                            WJAudioManager.Instance.PlayHitSound();
+                        }
                         var scoreManager = FindObjectOfType<WJScoreManager>();
                         scoreManager?.DeductScore(isLeftTeam);
                     }
@@ -138,7 +139,10 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
                 return;
             }
 
-            WJAudioManager.Instance?.PlayBounceSound();
+            if (WJAudioManager.Instance != null)
+            {
+                WJAudioManager.Instance.PlayBounceSound();
+            }
             Vector3 normal = collision.contacts[0].normal;
             normal.y = 0;
             normal.Normalize();

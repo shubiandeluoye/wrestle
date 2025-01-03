@@ -12,7 +12,10 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
         [Header("Settings")]
         [SerializeField] protected WJShooterData shooterData;
         [SerializeField] protected bool canShoot = true;
-        [SerializeField] protected bool isLeftPlayer = true;
+        
+        [Header("Bullet Settings")]
+        [SerializeField] [Range(0.2f, 2f)] protected float bulletScaleRatio = 0.5f;  // 增大范围到0.2-2倍
+        [Tooltip("子弹大小相对于玩家的比例(0.2-2倍)")]
 
         protected float nextFireTime;
 
@@ -21,19 +24,31 @@ namespace Assets.Scripts.WJ.Core.Shooting.Base
             if (Time.time < nextFireTime || shooterData == null) 
                 return false;
 
+            var playerController = GetComponentInParent<WJPlayerController>();
+            if (playerController == null) return false;
+
+            // 获取玩家大小并计算子弹大小
+            Vector3 playerScale = transform.root.localScale;
+            Vector3 bulletScale = playerScale * bulletScaleRatio;
+
             GameObject bullet = Instantiate(
                 shooterData.bulletPrefab,
                 firePoint.position,
                 Quaternion.identity
             );
 
+            bullet.transform.localScale = bulletScale;
+
             if (bullet.TryGetComponent<WJBaseBullet>(out var bulletComponent))
             {
-                var playerController = GetComponentInParent<WJPlayerController>();
-                int shooterId = playerController != null ? playerController.GetPlayerId() : -1;
-
+                int shooterId = playerController.GetPlayerId();
                 bulletComponent.Initialize(angle, shooterId);
-                WJAudioManager.Instance?.PlayShootSound();
+                
+                // 添加空值检查
+                if (WJAudioManager.Instance != null)
+                {
+                    WJAudioManager.Instance.PlayShootSound();
+                }
             }
 
             nextFireTime = Time.time + shooterData.fireRate;

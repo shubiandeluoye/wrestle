@@ -17,8 +17,6 @@ namespace Assets.Scripts.WJ.Core.Network
         private NetworkRunner runner;
         private NetworkInputHandler inputHandler;
 
-        public static event Action<NetworkRunner> OnJoinedGame;
-
         public async void StartGame(GameMode mode)
         {
             if (useLocalMode)
@@ -70,7 +68,7 @@ namespace Assets.Scripts.WJ.Core.Network
             );
             if (leftPlayer.TryGetComponent<WJPlayerController>(out var leftController))
             {
-                leftController.SetPlayerSide(true);  // 使用 SetPlayerSide 而不是直接设置 IsLeftPlayer
+                leftController.SetPlayerId(1);  // 使用 SetPlayerId 而不是 SetPlayerSide
             }
 
             // 生成本地玩家2
@@ -82,7 +80,7 @@ namespace Assets.Scripts.WJ.Core.Network
             );
             if (rightPlayer.TryGetComponent<WJPlayerController>(out var rightController))
             {
-                rightController.SetPlayerSide(false);  // 使用 SetPlayerSide 而不是直接设置 IsLeftPlayer
+                rightController.SetPlayerId(2);  // 使用 SetPlayerId 而不是 SetPlayerSide
             }
 
             // 生成计分板
@@ -97,10 +95,10 @@ namespace Assets.Scripts.WJ.Core.Network
                 Vector3 spawnPoint = GetSpawnPoint(player);
                 var playerObject = runner.Spawn(NetworkPrefabsRef.Instance.playerPrefab, spawnPoint, Quaternion.identity, player);
                 
-                // 设置玩家位置信息
+                // 设置玩家ID
                 if (playerObject.TryGetComponent<WJPlayerController>(out var controller))
                 {
-                    controller.SetPlayerSide(player.PlayerId == 1);  // 使用 SetPlayerSide 方法
+                    controller.SetPlayerId(player.PlayerId);
                 }
 
                 // 如果是第一个玩家，生成计分板

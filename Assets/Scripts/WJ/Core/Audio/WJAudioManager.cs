@@ -4,16 +4,13 @@ namespace Assets.Scripts.WJ.Core.Audio
 {
     public class WJAudioManager : MonoBehaviour
     {
-        [Header("Audio Sources")]
-        [SerializeField] private AudioSource sfxSource;
-
-        [Header("Sound Effects")]
-        [SerializeField] private AudioClip shootSound;
-        [SerializeField] private AudioClip hitSound;
-        [SerializeField] private AudioClip bounceSound;
-        [SerializeField] private AudioClip gameOverSound;
-
         public static WJAudioManager Instance { get; private set; }
+
+        [Header("Audio Sources")]
+        [SerializeField] private AudioSource shootSound;
+        [SerializeField] private AudioSource hitSound;
+        [SerializeField] private AudioSource bounceSound;
+        [SerializeField] private AudioSource gameOverSound;
 
         private void Awake()
         {
@@ -30,22 +27,22 @@ namespace Assets.Scripts.WJ.Core.Audio
 
         public void PlayShootSound()
         {
-            if (shootSound) sfxSource.PlayOneShot(shootSound);
+            if (shootSound != null) shootSound.Play();
         }
 
         public void PlayHitSound()
         {
-            if (hitSound) sfxSource.PlayOneShot(hitSound);
+            if (hitSound != null) hitSound.Play();
         }
 
         public void PlayBounceSound()
         {
-            if (bounceSound) sfxSource.PlayOneShot(bounceSound);
+            if (bounceSound != null) bounceSound.Play();
         }
 
         public void PlayGameOverSound()
         {
-            if (gameOverSound) sfxSource.PlayOneShot(gameOverSound);
+            if (gameOverSound != null) gameOverSound.Play();
         }
     }
 } 

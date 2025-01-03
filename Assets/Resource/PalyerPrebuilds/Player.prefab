@@ -48,7 +48,6 @@ GameObject:
   - component: {fileID: 2327876495831989654}
   - component: {fileID: 4005806559639828653}
   - component: {fileID: 5639232160406955957}
-  - component: {fileID: 3777783583486254731}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -65,9 +64,9 @@ Transform:
   m_GameObject: {fileID: 3510337249132066211}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 13.6, z: 26.6}
-  m_LocalScale: {x: 6.93, y: 6.93, z: 6.93}
-  m_ConstrainProportionsScale: 1
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 479833779047847093}
   - {fileID: 4294011581815465104}
@@ -220,7 +219,6 @@ MonoBehaviour:
   isLeftPlayer: 0
   angle30: 30
   angle45: 45
-  _IsLeftPlayer: 0
   minY: -10
 --- !u!114 &5639232160406955957
 MonoBehaviour:
@@ -236,26 +234,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   firePoint: {fileID: 4294011581815465104}
   shooterData: {fileID: 11400000, guid: 95ce45781739dfe44b5cd7cde94d7a7d, type: 2}
+  canShoot: 1
   isLeftPlayer: 1
---- !u!114 &3777783583486254731
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3510337249132066211}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SortKey: 3160656639
-  ObjectInterest: 1
-  Flags: 262145
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 4005806559639828653}
-  - {fileID: 5639232160406955957}
 --- !u!1 &6094725575644963341
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,8 +264,8 @@ Transform:
   m_GameObject: {fileID: 6094725575644963341}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0, y: 0, z: -0.27}
-  m_LocalScale: {x: 0.87638, y: 0.42329, z: 0.455}
+  m_LocalPosition: {x: -0, y: 0.5, z: 0.39}
+  m_LocalScale: {x: 0.4079795, y: 0.31208327, z: 0.728546}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3849554874396408800}

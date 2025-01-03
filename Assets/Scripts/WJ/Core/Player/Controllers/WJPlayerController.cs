@@ -34,6 +34,14 @@ namespace Assets.Scripts.WJ.Core.Player.Controllers
             inputActions = new WJInputActions();
             inputActions.Player.SetCallbacks(this);
             inputActions.Enable();
+
+            // 允许重力，但限制旋转
+            if (TryGetComponent<Rigidbody>(out var rb))
+            {
+                rb.useGravity = true;     // 启用重力
+                rb.isKinematic = false;    // 受物理影响
+                rb.constraints = RigidbodyConstraints.FreezeRotation;  // 只冻结旋转
+            }
         }
 
         public void OnMovement(InputAction.CallbackContext context)
@@ -116,14 +124,15 @@ namespace Assets.Scripts.WJ.Core.Player.Controllers
             return playerId == 1 || playerId == 3;
         }
 
-        public void SetPlayerSide(bool isLeft)
-        {
-            isLeftPlayer = isLeft;
-        }
-
         public void SetPlayerId(int id)
         {
             playerId = id;
+            
+            // 根据ID设置朝向
+            bool isLeftPlayer = (id == 1 || id == 3);
+            // 左玩家向右旋转90度，右玩家向左旋转90度
+            float rotationY = isLeftPlayer ? 90f : -90f;
+            transform.rotation = Quaternion.Euler(0, rotationY, 0);
         }
 
         public int GetTeamId()
