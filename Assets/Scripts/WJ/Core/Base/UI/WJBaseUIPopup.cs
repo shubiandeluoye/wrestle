@@ -62,7 +62,7 @@ namespace WJ.Core.Base.UI
                 onCancel.AddListener(onCancelAction);
         }
 
-        protected override void OnDestroy()
+        protected virtual void OnDestroy()
         {
             if (confirmButton != null)
                 confirmButton.onClick.RemoveListener(OnConfirm);
@@ -74,4 +74,4 @@ namespace WJ.Core.Base.UI
             onCancel.RemoveAllListeners();
         }
     }
-} 
+}    
